@@ -5,7 +5,7 @@ from typing import Optional
 from groq import Groq
 
 # Initialize Groq client securely using environment variable
-client = Groq(api_key="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")
+client = Groq(api_key="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")
 
 router = APIRouter()
 
@@ -29,8 +29,8 @@ def tailor_documents(request: TailorRequest):
         completion = client.chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=messages,
-            temperature=1,
-            max_completion_tokens=1024,
+            temperature=0.75,
+            max_completion_tokens=8192,
             top_p=1,
             stream=False,
             stop=None,
