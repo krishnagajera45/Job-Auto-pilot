@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 app = FastAPI(title="Job Autopilot Job Ingestion Service", version="0.1.0")
 
+# Prototype-only in-memory storage; replace with persistent storage.
 JOBS: Dict[str, dict] = {}
 
 

@@ -25,6 +25,7 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/v1/auth/login")
 
+# Prototype-only in-memory storage; replace with persistent storage before production.
 USERS: Dict[str, Dict[str, str]] = {}
 
 

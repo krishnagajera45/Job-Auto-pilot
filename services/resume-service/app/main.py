@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 app = FastAPI(title="Job Autopilot Resume Service", version="0.1.0")
 
+# Prototype-only in-memory storage; replace with Postgres + object storage.
 RESUMES: Dict[str, dict] = {}
 COVER_LETTERS: Dict[str, dict] = {}
 
