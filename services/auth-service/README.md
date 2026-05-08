@@ -13,3 +13,6 @@
 - `POST /v1/auth/mfa/verify`
 - `GET /v1/users/me`
 - `GET /v1/admin/health`
+
+## Prototype Note
+Current implementation uses in-memory storage for users. Replace with Postgres/Supabase for persistence.

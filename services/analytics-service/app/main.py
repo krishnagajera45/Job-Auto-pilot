@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -20,7 +20,7 @@ async def health_check() -> dict:
 
 @app.post("/v1/analytics/events")
 async def ingest_event(event: AnalyticsEvent) -> dict:
-    return {"status": "ingested", "received_at": datetime.utcnow().isoformat()}
+    return {"status": "ingested", "received_at": datetime.now(timezone.utc).isoformat()}
 
 
 @app.get("/v1/analytics/summary")

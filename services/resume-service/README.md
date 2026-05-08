@@ -10,3 +10,6 @@
 - `GET /v1/resumes`
 - `POST /v1/resumes/{resume_id}/versions`
 - `POST /v1/cover-letters`
+
+## Prototype Note
+Current implementation stores resumes and cover letters in memory. Persist to Postgres + object storage.
