@@ -15,7 +15,8 @@ app = FastAPI(title="Job Autopilot Auth Service", version="0.1.0")
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "dev-secret")
-if ENVIRONMENT.lower() == "production" and SECRET_KEY == "dev-secret":
+PRODUCTION_ENVS = {"production", "prod", "prd"}
+if ENVIRONMENT.lower() in PRODUCTION_ENVS and SECRET_KEY == "dev-secret":
     raise RuntimeError("AUTH_SECRET_KEY must be set in production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))

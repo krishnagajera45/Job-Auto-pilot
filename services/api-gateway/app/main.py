@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 from typing import Dict, Literal, Optional
 
@@ -8,6 +9,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, HttpUrl
 
 app = FastAPI(title="Job Autopilot API Gateway", version="0.1.0")
+logger = logging.getLogger(__name__)
 
 SERVICE_URLS: Dict[str, str] = {
     "auth": os.getenv("AUTH_SERVICE_URL", "http://auth-service:8001"),
@@ -51,5 +53,6 @@ async def intake_job(request: JobIntakeRequest) -> dict:
             response = await client.post(url, json=request.model_dump())
             response.raise_for_status()
         except httpx.HTTPError as exc:
-            raise HTTPException(status_code=502, detail=f"Job ingestion service error: {exc}") from exc
+            logger.exception("Job ingestion service error")
+            raise HTTPException(status_code=502, detail="Job ingestion service unavailable") from exc
     return response.json()
