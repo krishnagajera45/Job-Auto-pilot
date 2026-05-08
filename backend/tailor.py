@@ -5,7 +5,8 @@ from typing import Optional
 from groq import Groq
 
 # Initialize Groq client securely using environment variable
-client = Groq(api_key="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")
+groq_api_key = os.getenv("GROQ_API_KEY")
+client = Groq(api_key=groq_api_key) if groq_api_key else None
 
 router = APIRouter()
 
@@ -16,6 +17,8 @@ class TailorRequest(BaseModel):
 
 @router.post("/tailor")
 def tailor_documents(request: TailorRequest):
+    if not client:
+        raise HTTPException(status_code=503, detail="GROQ_API_KEY is not configured")
     messages = [
         {"role": "system", "content": "You are an AI assistant that specializes in tailoring resumes and cover letters. Your goal is to refine and optimize the provided resume and cover letter to align perfectly with the job description. Ensure the output is professional, concise, and highlights the candidate's strengths relevant to the job. Always separate the refined resume and cover letter clearly in the output."},
         {"role": "user", "content": f"Job Description: {request.job_description}"},

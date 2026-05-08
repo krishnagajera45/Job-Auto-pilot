@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Job Autopilot Platform API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      summary: Platform health check
+      responses:
+        '200':
+          description: OK
+  /v1/jobs/intake:
+    post:
+      summary: Intake job link or ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobIntakeRequest'
+      responses:
+        '200':
+          description: Job parsed
+  /v1/workflows/tailor:
+    post:
+      summary: Tailor resume and cover letter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TailorRequest'
+      responses:
+        '200':
+          description: Workflow queued
+components:
+  schemas:
+    JobIntakeRequest:
+      type: object
+      properties:
+        source:
+          type: string
+          example: job_link
+        job_link:
+          type: string
+          format: uri
+        job_id:
+          type: string
+        user_id:
+          type: string
+      required:
+        - source
+    TailorRequest:
+      type: object
+      properties:
+        job_id:
+          type: string
+        resume_id:
+          type: string
+        user_id:
+          type: string
+        include_cover_letter:
+          type: boolean
+      required:
+        - job_id
+        - resume_id
+        - user_id
