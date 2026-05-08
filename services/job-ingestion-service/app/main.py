@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 
 from fastapi import FastAPI
 from pydantic import BaseModel, Field, HttpUrl
@@ -12,7 +12,7 @@ JOBS: Dict[str, dict] = {}
 
 
 class JobIngestRequest(BaseModel):
-    source: str = Field(..., description="job_link or job_id")
+    source: Literal["job_link", "job_id"] = Field(..., description="job_link or job_id")
     job_link: Optional[HttpUrl] = None
     job_id: Optional[str] = None
     user_id: Optional[str] = None

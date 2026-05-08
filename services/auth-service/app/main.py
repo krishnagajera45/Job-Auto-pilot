@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Dict
+from typing import Dict, Literal
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 import jwt
+from jwt import InvalidTokenError
 from passlib.context import CryptContext
 from pydantic import BaseModel, Field
 
@@ -29,7 +30,7 @@ USERS: Dict[str, Dict[str, str]] = {}
 class RegisterRequest(BaseModel):
     username: str
     password: str
-    role: str = Field(default="user", pattern="^(user|admin)$")
+    role: Literal["user", "admin"] = "user"
 
 
 class LoginRequest(BaseModel):
@@ -75,7 +76,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> UserProfile:
             raise HTTPException(status_code=401, detail="Invalid token")
         user = USERS[username]
         return UserProfile(username=username, role=role, mfa_enabled=user.get("mfa_enabled", False))
-    except jwt.PyJWTError as exc:
+    except InvalidTokenError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
 
 

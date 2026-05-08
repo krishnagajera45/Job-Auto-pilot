@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 
 import httpx
 from fastapi import FastAPI, HTTPException
@@ -22,7 +22,7 @@ SERVICE_URLS: Dict[str, str] = {
 
 
 class JobIntakeRequest(BaseModel):
-    source: str = Field(..., description="job_link or job_id")
+    source: Literal["job_link", "job_id"] = Field(..., description="job_link or job_id")
     job_link: Optional[HttpUrl] = None
     job_id: Optional[str] = None
     user_id: Optional[str] = None

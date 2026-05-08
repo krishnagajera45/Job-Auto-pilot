@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -19,7 +19,7 @@ class ApplicationRequest(BaseModel):
 
 class ApprovalRequest(BaseModel):
     approver_id: str
-    decision: str
+    decision: Literal["approve", "reject"]
 
 
 @app.get("/health")

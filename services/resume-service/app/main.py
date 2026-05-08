@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -16,7 +16,10 @@ class ResumeCreateRequest(BaseModel):
     user_id: str
     title: str
     content: str
-    source: str = Field(default="upload", description="upload | linkedin | paste")
+    source: Literal["upload", "linkedin", "paste"] = Field(
+        default="upload",
+        description="upload | linkedin | paste",
+    )
 
 
 class ResumeVersionRequest(BaseModel):

@@ -5,10 +5,8 @@ from typing import Optional
 from groq import Groq
 
 # Initialize Groq client securely using environment variable
-groq_api_key = os.getenv("GROQ_API_KEY")
-
-
 def get_groq_client() -> Groq:
+    groq_api_key = os.getenv("GROQ_API_KEY")
     if not groq_api_key:
         raise HTTPException(status_code=503, detail="GROQ_API_KEY is not configured")
     return Groq(api_key=groq_api_key)
