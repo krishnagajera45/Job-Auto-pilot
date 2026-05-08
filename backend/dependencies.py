@@ -16,7 +16,10 @@ Base = declarative_base()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT settings
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 SECRET_KEY = os.getenv("JOB_AUTOPILOT_SECRET_KEY", "dev-secret")
+if ENVIRONMENT.lower() == "production" and SECRET_KEY == "dev-secret":
+    raise RuntimeError("JOB_AUTOPILOT_SECRET_KEY must be set in production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

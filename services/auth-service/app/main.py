@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel, Field
 
 app = FastAPI(title="Job Autopilot Auth Service", version="0.1.0")
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "dev-secret")
+if ENVIRONMENT.lower() == "production" and SECRET_KEY == "dev-secret":
+    raise RuntimeError("AUTH_SECRET_KEY must be set in production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
@@ -58,7 +61,7 @@ def create_token(username: str, role: str, expires_delta: timedelta) -> str:
     to_encode = {
         "sub": username,
         "role": role,
-        "exp": datetime.utcnow() + expires_delta,
+        "exp": datetime.now(timezone.utc) + expires_delta,
     }
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
@@ -72,7 +75,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> UserProfile:
             raise HTTPException(status_code=401, detail="Invalid token")
         user = USERS[username]
         return UserProfile(username=username, role=role, mfa_enabled=user.get("mfa_enabled", False))
-    except JWTError as exc:
+    except jwt.PyJWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
 
 

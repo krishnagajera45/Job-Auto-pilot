@@ -33,6 +33,7 @@ services:
     ports:
       - "8001:8001"
     environment:
+      # Do not use the default in production environments.
       AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-dev-secret}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       REFRESH_TOKEN_EXPIRE_DAYS: ${REFRESH_TOKEN_EXPIRE_DAYS:-7}
