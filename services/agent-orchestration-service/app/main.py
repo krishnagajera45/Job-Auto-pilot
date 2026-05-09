@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import uuid
 from pathlib import Path
@@ -10,6 +11,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field, HttpUrl
 
 app = FastAPI(title="Job Autopilot Agent Orchestration Service", version="0.1.0")
+logger = logging.getLogger(__name__)
 
 DEFAULT_OPENCLAW_CONFIG = {
     "llm": {"provider": "ollama", "model": "qwen2.5:3b"},
@@ -29,6 +31,7 @@ def load_openclaw_config() -> dict[str, Any]:
     config_path = Path(os.getenv("OPENCLAW_CONFIG_PATH", "/app/configs/openclaw.json"))
     if config_path.exists():
         return json.loads(config_path.read_text())
+    logger.warning("OpenClaw config not found at %s, using defaults", config_path)
     return DEFAULT_OPENCLAW_CONFIG
 
 

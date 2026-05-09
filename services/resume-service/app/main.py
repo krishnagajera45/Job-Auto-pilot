@@ -50,7 +50,7 @@ class RenderDocumentsRequest(BaseModel):
     name: str = "Candidate"
     job_title: str = "Role"
     company: str = "Company"
-    template_name: str = "default"
+    template_name: Literal["default"] = "default"
 
 
 @app.get("/health")
@@ -116,19 +116,22 @@ def render_latex(template_path: Path, values: dict) -> str:
     return template_text
 
 
-def compile_pdf(tex_path: Path) -> Optional[Path]:
+def compile_pdf(tex_path: Path) -> tuple[Optional[Path], Optional[Path]]:
     pdflatex = shutil.which("pdflatex")
     if not pdflatex:
-        return None
-    subprocess.run(
+        return None, None
+    result = subprocess.run(
         [pdflatex, "-interaction=nonstopmode", tex_path.name],
         cwd=tex_path.parent,
         check=False,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
     )
+    log_path = tex_path.with_suffix(".log")
+    log_path.write_text(result.stdout or "")
     pdf_path = tex_path.with_suffix(".pdf")
-    return pdf_path if pdf_path.exists() else None
+    return (pdf_path if pdf_path.exists() else None, log_path)
 
 
 def write_docx(docx_path: Path, heading: str, content: str) -> None:
@@ -152,9 +155,8 @@ async def render_documents(request: RenderDocumentsRequest) -> dict:
         "company": request.company,
         "content": request.resume_content,
     }
-    template_suffix = "" if request.template_name == "default" else f"_{request.template_name}"
-    resume_template = TEMPLATE_DIR / f"resume{template_suffix}.tex"
-    cover_template = TEMPLATE_DIR / f"cover_letter{template_suffix}.tex"
+    resume_template = TEMPLATE_DIR / "resume.tex"
+    cover_template = TEMPLATE_DIR / "cover_letter.tex"
 
     resume_tex_path = bundle_dir / "resume.tex"
     cover_tex_path = bundle_dir / "cover_letter.tex"
@@ -172,8 +174,8 @@ async def render_documents(request: RenderDocumentsRequest) -> dict:
         )
     )
 
-    resume_pdf = compile_pdf(resume_tex_path)
-    cover_pdf = compile_pdf(cover_tex_path)
+    resume_pdf, resume_log = compile_pdf(resume_tex_path)
+    cover_pdf, cover_log = compile_pdf(cover_tex_path)
 
     resume_docx = bundle_dir / "resume.docx"
     cover_docx = bundle_dir / "cover_letter.docx"
@@ -187,11 +189,13 @@ async def render_documents(request: RenderDocumentsRequest) -> dict:
             "tex_path": str(resume_tex_path),
             "pdf_path": str(resume_pdf) if resume_pdf else None,
             "docx_path": str(resume_docx),
+            "latex_log": str(resume_log) if resume_log else None,
         },
         "cover_letter": {
             "tex_path": str(cover_tex_path),
             "pdf_path": str(cover_pdf) if cover_pdf else None,
             "docx_path": str(cover_docx),
+            "latex_log": str(cover_log) if cover_log else None,
         },
         "status": "rendered" if resume_pdf and cover_pdf else "tex-only",
     }
