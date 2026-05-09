@@ -117,6 +117,7 @@ def render_latex(template_path: Path, values: dict) -> str:
 
 
 def compile_pdf(tex_path: Path) -> tuple[Optional[Path], Optional[Path]]:
+    """Compile a LaTeX file to PDF, returning the PDF and log paths when available."""
     pdflatex = shutil.which("pdflatex")
     if not pdflatex:
         return None, None
@@ -135,6 +136,7 @@ def compile_pdf(tex_path: Path) -> tuple[Optional[Path], Optional[Path]]:
 
 
 def write_docx(docx_path: Path, heading: str, content: str) -> None:
+    """Create a DOCX file with a heading and paragraph content."""
     document = Document()
     document.add_heading(heading, level=1)
     for line in content.splitlines():

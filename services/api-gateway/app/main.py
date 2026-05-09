@@ -49,6 +49,16 @@ class JobFetchRequest(BaseModel):
     user_id: Optional[str] = None
 
 
+@app.on_event("startup")
+async def startup_event() -> None:
+    app.state.http_client = httpx.AsyncClient(timeout=20)
+
+
+@app.on_event("shutdown")
+async def shutdown_event() -> None:
+    await app.state.http_client.aclose()
+
+
 @app.get("/health")
 async def health_check() -> dict:
     return {"status": "ok", "service": "api-gateway"}
@@ -67,37 +77,37 @@ async def list_services() -> dict:
 @app.post("/v1/jobs/intake")
 async def intake_job(request: JobIntakeRequest) -> dict:
     url = f"{SERVICE_URLS['job_ingestion']}/v1/jobs/ingest"
-    async with httpx.AsyncClient(timeout=10) as client:
-        try:
-            response = await client.post(url, json=request.model_dump())
-            response.raise_for_status()
-        except httpx.HTTPError as exc:
-            logger.exception("Job ingestion service error")
-            raise HTTPException(status_code=502, detail="Job ingestion service unavailable") from exc
+    client = app.state.http_client
+    try:
+        response = await client.post(url, json=request.model_dump())
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        logger.exception("Job ingestion service error")
+        raise HTTPException(status_code=502, detail="Job ingestion service unavailable") from exc
     return response.json()
 
 
 @app.post("/v1/jobs/fetch")
 async def fetch_job(request: JobFetchRequest) -> dict:
     url = f"{SERVICE_URLS['job_ingestion']}/v1/jobs/fetch"
-    async with httpx.AsyncClient(timeout=15) as client:
-        try:
-            response = await client.post(url, json=request.model_dump())
-            response.raise_for_status()
-        except httpx.HTTPError as exc:
-            logger.exception("Job fetch service error")
-            raise HTTPException(status_code=502, detail="Job fetch unavailable") from exc
+    client = app.state.http_client
+    try:
+        response = await client.post(url, json=request.model_dump())
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        logger.exception("Job fetch service error")
+        raise HTTPException(status_code=502, detail="Job fetch unavailable") from exc
     return response.json()
 
 
 @app.post("/v1/channels/intake")
 async def intake_channel(request: ChannelIntakeRequest) -> dict:
     url = f"{SERVICE_URLS['messaging']}/v1/channels/intake"
-    async with httpx.AsyncClient(timeout=20) as client:
-        try:
-            response = await client.post(url, json=request.model_dump())
-            response.raise_for_status()
-        except httpx.HTTPError as exc:
-            logger.exception("Messaging service error")
-            raise HTTPException(status_code=502, detail="Messaging service unavailable") from exc
+    client = app.state.http_client
+    try:
+        response = await client.post(url, json=request.model_dump())
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        logger.exception("Messaging service error")
+        raise HTTPException(status_code=502, detail="Messaging service unavailable") from exc
     return response.json()

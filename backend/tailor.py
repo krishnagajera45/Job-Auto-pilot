@@ -1,10 +1,13 @@
 import os
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from functools import lru_cache
 from typing import Optional
+
+from fastapi import APIRouter, HTTPException
 from groq import Groq
+from pydantic import BaseModel
 
 # Initialize Groq client securely using environment variable
+@lru_cache(maxsize=1)
 def get_groq_client() -> Groq:
     groq_api_key = os.getenv("GROQ_API_KEY")
     if not groq_api_key:

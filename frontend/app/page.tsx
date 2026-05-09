@@ -57,7 +57,7 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-white">Workflow snapshot</h3>
             <ul className="mt-4 space-y-3 text-sm text-slate-300">
               <li>1. Job parsing + requirement extraction</li>
-              <li>2. Memory retrieval (RAG + Mem0)</li>
+              <li>2. Memory retrieval (RAG + mem0)</li>
               <li>3. Resume + cover letter tailoring</li>
               <li>4. Approval gate + audit log</li>
               <li>5. ATS automation + status updates</li>

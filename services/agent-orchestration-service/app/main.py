@@ -118,6 +118,7 @@ async def run_openclaw_workflow(request: OpenClawRequest) -> dict:
     return {
         "workflow_id": workflow_id,
         "status": "queued",
+        "status_detail": "placeholder-content",
         "channel": request.channel,
         "agents": agents,
         "resume_content": resume_content,
