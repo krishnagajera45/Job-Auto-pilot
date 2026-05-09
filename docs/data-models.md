@@ -12,6 +12,8 @@
 - **prompts**: id, name, content, version
 - **consent_logs**: id, user_id, action, timestamp
 - **audit_logs**: id, actor_id, action, resource, timestamp
+- **channel_messages**: id, user_id, channel, payload, received_at
+- **document_outputs**: id, user_id, job_id, resume_path, cover_letter_path, created_at
 
 ## Vector Storage
 - **memory_sources**: id, user_id, source_type, metadata

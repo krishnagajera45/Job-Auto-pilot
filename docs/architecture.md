@@ -4,6 +4,7 @@
 ```mermaid
 graph TD
   UI[Next.js Web UI] --> GW[API Gateway]
+  TG[Telegram/WhatsApp] --> MSG[Messaging Service]
   GW --> AUTH[Auth/User Service]
   GW --> RESUME[Resume Service]
   GW --> JOBS[Job Ingestion Service]
@@ -12,6 +13,9 @@ graph TD
   GW --> AUTO[Application Automation Service]
   GW --> NOTIFY[Notifications Service]
   GW --> ANALYTICS[Analytics Service]
+  MSG --> AGENT
+  MSG --> RESUME
+  MSG --> NOTIFY
   AGENT --> RAG
   AUTO --> NOTIFY
   RESUME --> STORAGE[(Object Storage)]
@@ -26,6 +30,7 @@ graph TD
 - **Tooling:** MCP/FastMCP
 - **Memory:** Mem0
 - **Model Serving:** vLLM / Ollama
+- **Chat Ops:** OpenClaw + Telegram/WhatsApp bots
 - **Datastores:** Supabase/Postgres, Qdrant/pgvector, Redis
 - **Queues:** RabbitMQ
 - **Storage:** S3-compatible (MinIO)

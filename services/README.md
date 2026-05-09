@@ -13,3 +13,6 @@ Each service is a FastAPI application packaged with its own Dockerfile. Build th
 | application-automation-service | 8006 | ATS automation + approvals |
 | notifications-service | 8007 | Email/SMS/in-app notifications |
 | analytics-service | 8008 | Analytics event ingestion |
+| messaging-service | 8010 | Telegram/WhatsApp intake |
+
+OpenClaw configuration lives in `services/configs/openclaw.json` and is loaded by the agent orchestration service.

@@ -16,6 +16,7 @@ services:
       AUTOMATION_SERVICE_URL: http://application-automation-service:8006
       NOTIFICATIONS_SERVICE_URL: http://notifications-service:8007
       ANALYTICS_SERVICE_URL: http://analytics-service:8008
+      MESSAGING_SERVICE_URL: http://messaging-service:8010
     depends_on:
       - auth-service
       - resume-service
@@ -25,6 +26,7 @@ services:
       - application-automation-service
       - notifications-service
       - analytics-service
+      - messaging-service
 
   auth-service:
     build:
@@ -58,6 +60,11 @@ services:
       dockerfile: agent-orchestration-service/Dockerfile
     ports:
       - "8004:8004"
+    environment:
+      OPENCLAW_CONFIG_PATH: /app/configs/openclaw.json
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      LLM_MODEL: ${LLM_MODEL:-qwen2.5:3b}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
 
   rag-memory-service:
     build:
@@ -86,6 +93,18 @@ services:
       dockerfile: analytics-service/Dockerfile
     ports:
       - "8008:8008"
+
+  messaging-service:
+    build:
+      context: ./services
+      dockerfile: messaging-service/Dockerfile
+    ports:
+      - "8010:8010"
+    environment:
+      JOB_INGESTION_SERVICE_URL: http://job-ingestion-service:8003
+      AGENT_SERVICE_URL: http://agent-orchestration-service:8004
+      RESUME_SERVICE_URL: http://resume-service:8002
+      NOTIFICATIONS_SERVICE_URL: http://notifications-service:8007
 
   postgres:
     image: postgres:16-alpine

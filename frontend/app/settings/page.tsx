@@ -16,6 +16,10 @@ export default function SettingsPage() {
             description="Choose where you receive job application updates."
           />
           <SectionCard
+            title="Messaging channels"
+            description="Connect Telegram or WhatsApp to intake job links and receive PDFs."
+          />
+          <SectionCard
             title="Security"
             description="Enable MFA, rotate API keys, and manage sessions."
           />

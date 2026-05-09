@@ -7,6 +7,7 @@ Agentic AI platform for automating job applications: intake a job link, tailor r
 - Agent orchestration with LangGraph/LangChain + MCP tools.
 - RAG memory with vector storage (Qdrant/pgvector).
 - Playwright-based application automation with audit logs.
+- OpenClaw-ready messaging intake via Telegram/WhatsApp.
 
 ## Repository Layout
 - `frontend/`: Next.js dashboard and user experience.
@@ -21,6 +22,8 @@ npm install --prefix frontend
 pip install -r services/requirements.txt
 docker compose up --build
 ```
+
+Edit `services/configs/openclaw.json` to choose the Ollama or OpenAI provider and configure models.
 
 Frontend: http://localhost:3000 (run separately via `npm run dev` in `frontend/`).
 

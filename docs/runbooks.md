@@ -14,3 +14,8 @@
 1. Check Qdrant status and disk usage.
 2. Reduce query concurrency and batch retrieval.
 3. Rebuild indexes if performance regresses.
+
+## Messaging Delivery Failure
+1. Verify messaging-service health and channel credentials.
+2. Re-send attachments via notifications-service.
+3. Fallback to email delivery if chat channels are unavailable.

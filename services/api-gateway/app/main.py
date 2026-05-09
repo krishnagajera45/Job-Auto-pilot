@@ -20,6 +20,7 @@ SERVICE_URLS: Dict[str, str] = {
     "automation": os.getenv("AUTOMATION_SERVICE_URL", "http://application-automation-service:8006"),
     "notifications": os.getenv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service:8007"),
     "analytics": os.getenv("ANALYTICS_SERVICE_URL", "http://analytics-service:8008"),
+    "messaging": os.getenv("MESSAGING_SERVICE_URL", "http://messaging-service:8010"),
 }
 
 
@@ -27,6 +28,24 @@ class JobIntakeRequest(BaseModel):
     source: Literal["job_link", "job_id"] = Field(..., description="job_link or job_id")
     job_link: Optional[HttpUrl] = None
     job_id: Optional[str] = None
+    user_id: Optional[str] = None
+
+
+class ChannelIntakeRequest(BaseModel):
+    user_id: str
+    user_handle: str
+    channel: Literal["telegram", "whatsapp"]
+    message: str
+    job_link: Optional[HttpUrl] = None
+    job_description: Optional[str] = None
+    name: str = "Candidate"
+    job_title: str = "Role"
+    company: str = "Company"
+    template_name: str = "default"
+
+
+class JobFetchRequest(BaseModel):
+    job_link: HttpUrl
     user_id: Optional[str] = None
 
 
@@ -55,4 +74,30 @@ async def intake_job(request: JobIntakeRequest) -> dict:
         except httpx.HTTPError as exc:
             logger.exception("Job ingestion service error")
             raise HTTPException(status_code=502, detail="Job ingestion service unavailable") from exc
+    return response.json()
+
+
+@app.post("/v1/jobs/fetch")
+async def fetch_job(request: JobFetchRequest) -> dict:
+    url = f"{SERVICE_URLS['job_ingestion']}/v1/jobs/fetch"
+    async with httpx.AsyncClient(timeout=15) as client:
+        try:
+            response = await client.post(url, json=request.model_dump())
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            logger.exception("Job fetch service error")
+            raise HTTPException(status_code=502, detail="Job fetch unavailable") from exc
+    return response.json()
+
+
+@app.post("/v1/channels/intake")
+async def intake_channel(request: ChannelIntakeRequest) -> dict:
+    url = f"{SERVICE_URLS['messaging']}/v1/channels/intake"
+    async with httpx.AsyncClient(timeout=20) as client:
+        try:
+            response = await client.post(url, json=request.model_dump())
+            response.raise_for_status()
+        except httpx.HTTPError as exc:
+            logger.exception("Messaging service error")
+            raise HTTPException(status_code=502, detail="Messaging service unavailable") from exc
     return response.json()

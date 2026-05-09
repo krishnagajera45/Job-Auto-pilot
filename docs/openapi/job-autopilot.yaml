@@ -40,6 +40,30 @@ paths:
       responses:
         '200':
           description: Workflow queued
+  /v1/jobs/fetch:
+    post:
+      summary: Fetch job description from link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobFetchRequest'
+      responses:
+        '200':
+          description: Job description fetched
+  /v1/channels/intake:
+    post:
+      summary: Intake Telegram/WhatsApp message for OpenClaw workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChannelIntakeRequest'
+      responses:
+        '200':
+          description: OpenClaw workflow started
 components:
   schemas:
     JobIntakeRequest:
@@ -72,3 +96,43 @@ components:
         - job_id
         - resume_id
         - user_id
+    JobFetchRequest:
+      type: object
+      properties:
+        job_link:
+          type: string
+          format: uri
+        user_id:
+          type: string
+      required:
+        - job_link
+    ChannelIntakeRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+        user_handle:
+          type: string
+        channel:
+          type: string
+          enum: [telegram, whatsapp]
+        message:
+          type: string
+        job_link:
+          type: string
+          format: uri
+        job_description:
+          type: string
+        name:
+          type: string
+        job_title:
+          type: string
+        company:
+          type: string
+        template_name:
+          type: string
+      required:
+        - user_id
+        - user_handle
+        - channel
+        - message

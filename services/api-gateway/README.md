@@ -21,3 +21,4 @@ Configure downstream services via environment variables:
 - `AUTOMATION_SERVICE_URL`
 - `NOTIFICATIONS_SERVICE_URL`
 - `ANALYTICS_SERVICE_URL`
+- `MESSAGING_SERVICE_URL`

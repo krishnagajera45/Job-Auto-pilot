@@ -6,6 +6,7 @@ COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY agent-orchestration-service/app /app/app
+COPY configs /app/configs
 
 EXPOSE 8004
 

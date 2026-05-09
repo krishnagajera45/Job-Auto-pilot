@@ -1,7 +1,7 @@
 # Delivery Roadmap
 
 ## Phase 1: MVP
-- Auth, job intake, resume import.
+- Auth, job intake (web + chat), resume import.
 - Basic tailoring and dashboard tracking.
 
 ## Phase 2: Automation

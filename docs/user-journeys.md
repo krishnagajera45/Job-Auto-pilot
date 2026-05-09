@@ -11,6 +11,11 @@
 2. System parses the posting and extracts requirements.
 3. User selects the target resume and optional cover letter template.
 
+## 2b. Job Intake via Telegram/WhatsApp
+1. Send a job link or full job description to the bot.
+2. OpenClaw normalizes the request and triggers the tailoring workflow.
+3. PDFs and DOCX files are delivered back over the same channel.
+
 ## 3. Tailor Documents
 1. Agent retrieves relevant experience from memory store.
 2. Resume and cover letter are tailored and scored.

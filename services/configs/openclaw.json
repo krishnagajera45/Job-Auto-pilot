@@ -1,0 +1,53 @@
+{
+  "llm": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b",
+    "ollama_host": "http://localhost:11434",
+    "openai_model": "gpt-4o-mini",
+    "cloud_provider": "anthropic",
+    "cloud_model": "claude-3-haiku",
+    "fallback_models": ["llama3.1:8b", "mistral:7b"]
+  },
+  "agents": [
+    {
+      "name": "channel_router",
+      "purpose": "Normalize Telegram/WhatsApp payloads into a single job intake request"
+    },
+    {
+      "name": "job_fetcher",
+      "purpose": "Fetch and summarize job descriptions from provided links"
+    },
+    {
+      "name": "requirements_extractor",
+      "purpose": "Extract hard/soft requirements from the job description"
+    },
+    {
+      "name": "memory_retriever",
+      "purpose": "Pull relevant user experience from RAG memory"
+    },
+    {
+      "name": "resume_tailor",
+      "purpose": "Rewrite resume content aligned to the role"
+    },
+    {
+      "name": "cover_letter_writer",
+      "purpose": "Draft a tailored cover letter"
+    },
+    {
+      "name": "latex_renderer",
+      "purpose": "Format outputs using LaTeX templates and compile to PDF"
+    },
+    {
+      "name": "application_automation",
+      "purpose": "Trigger ATS automation and capture status updates"
+    },
+    {
+      "name": "notifier",
+      "purpose": "Send PDFs back over Telegram/WhatsApp"
+    }
+  ],
+  "monitoring": {
+    "langsmith_enabled": true,
+    "langsmith_project": "job-autopilot"
+  }
+}
