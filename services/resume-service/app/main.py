@@ -20,6 +20,19 @@ COVER_LETTERS: Dict[str, dict] = {}
 TEMPLATE_DIR = Path(__file__).parent / "templates"
 OUTPUT_DIR = Path(os.getenv("DOCUMENT_OUTPUT_DIR", "/tmp/job-autopilot/documents"))
 
+LATEX_ESCAPE_SEQUENCES = [
+    ("\\", "\\\\textbackslash{}"),
+    ("&", "\\\\&"),
+    ("%", "\\\\%"),
+    ("$", "\\\\$"),
+    ("#", "\\\\#"),
+    ("_", "\\\\_"),
+    ("{", "\\\\{"),
+    ("}", "\\\\}"),
+    ("~", "\\\\textasciitilde{}"),
+    ("^", "\\\\textasciicircum{}"),
+]
+
 
 class ResumeCreateRequest(BaseModel):
     user_id: str
@@ -112,8 +125,15 @@ def render_latex(template_path: Path, values: dict) -> str:
         raise HTTPException(status_code=404, detail=f"Template not found: {template_path.name}")
     template_text = template_path.read_text()
     for key, value in values.items():
-        template_text = template_text.replace(f"{{{{{key}}}}}", str(value))
+        template_text = template_text.replace(f"{{{{{key}}}}}", escape_latex(str(value)))
     return template_text
+
+
+def escape_latex(value: str) -> str:
+    escaped = value
+    for char, replacement in LATEX_ESCAPE_SEQUENCES:
+        escaped = escaped.replace(char, replacement)
+    return escaped.replace("\n", "\\\\\n")
 
 
 def compile_pdf(tex_path: Path) -> tuple[Optional[Path], Optional[Path]]:
@@ -128,6 +148,7 @@ def compile_pdf(tex_path: Path) -> tuple[Optional[Path], Optional[Path]]:
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
+        timeout=20,
     )
     log_path = tex_path.with_suffix(".log")
     log_path.write_text(result.stdout or "")

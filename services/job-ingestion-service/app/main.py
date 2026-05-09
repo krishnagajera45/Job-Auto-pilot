@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ipaddress
+import os
 import re
 import uuid
 from html.parser import HTMLParser
@@ -24,6 +25,7 @@ ALLOWED_JOB_HOSTS = {
     "jobs.lever.co",
 }
 SAFE_PATH_PATTERN = re.compile(r"^/[A-Za-z0-9._~!$&'()*+,;=:@/\\-]*$")
+JOB_FETCH_PROXY_URL = os.getenv("JOB_FETCH_PROXY_URL", "https://r.jina.ai/http://")
 
 
 class JobIngestRequest(BaseModel):
@@ -103,7 +105,11 @@ async def fetch_job_description(request: JobFetchRequest) -> dict:
     safe_link = validate_job_link(str(request.job_link))
     async with httpx.AsyncClient(timeout=15) as client:
         try:
-            response = await client.get(safe_link)
+            response = await client.get(
+                JOB_FETCH_PROXY_URL,
+                params={"url": safe_link},
+                follow_redirects=False,
+            )
             response.raise_for_status()
         except httpx.HTTPError as exc:
             raise HTTPException(status_code=502, detail="Unable to fetch job posting") from exc

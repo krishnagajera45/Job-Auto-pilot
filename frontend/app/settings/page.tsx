@@ -16,7 +16,7 @@ export default function SettingsPage() {
             description="Choose where you receive job application updates."
           />
           <SectionCard
-            title="Messaging channels"
+            title="Messaging Channels"
             description="Connect Telegram or WhatsApp to intake job links and receive PDFs."
           />
           <SectionCard

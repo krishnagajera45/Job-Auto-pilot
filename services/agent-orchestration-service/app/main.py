@@ -28,10 +28,14 @@ DEFAULT_OPENCLAW_CONFIG = {
 
 
 def load_openclaw_config() -> dict[str, Any]:
-    config_path = Path(os.getenv("OPENCLAW_CONFIG_PATH", "/app/configs/openclaw.json"))
-    if config_path.exists():
+    base_dir = Path("/app/configs").resolve()
+    config_path = Path(os.getenv("OPENCLAW_CONFIG_PATH", base_dir / "openclaw.json")).resolve()
+    if base_dir in config_path.parents and config_path.exists():
         return json.loads(config_path.read_text())
-    logger.warning("OpenClaw config not found at %s, using defaults", config_path)
+    if base_dir not in config_path.parents:
+        logger.warning("OpenClaw config path %s is outside %s", config_path, base_dir)
+    else:
+        logger.warning("OpenClaw config not found at %s, using defaults", config_path)
     return DEFAULT_OPENCLAW_CONFIG
 
 

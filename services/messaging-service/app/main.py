@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import re
+from pathlib import Path
 from typing import Dict, Literal, Optional
 
 import httpx
@@ -116,13 +117,18 @@ async def intake_channel_message(request: ChannelIntakeRequest) -> ChannelIntake
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail="Document rendering failed") from exc
 
+    output_dir = Path(render_data.get("output_dir", "/tmp/job-autopilot/documents")).resolve()
     attachments = [
         render_data["resume"].get("pdf_path") or render_data["resume"].get("tex_path"),
         render_data["cover_letter"].get("pdf_path") or render_data["cover_letter"].get("tex_path"),
         render_data["resume"].get("docx_path"),
         render_data["cover_letter"].get("docx_path"),
     ]
-    attachments = [item for item in attachments if item]
+    attachments = [
+        item
+        for item in attachments
+        if item and output_dir in Path(item).resolve().parents
+    ]
 
     try:
         notify_resp = await client.post(

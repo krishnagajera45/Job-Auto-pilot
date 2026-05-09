@@ -1,18 +1,23 @@
 import os
-from functools import lru_cache
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from groq import Groq
 from pydantic import BaseModel
 
+GROQ_CLIENT: Groq | None = None
+GROQ_CLIENT_KEY: str | None = None
+
 # Initialize Groq client securely using environment variable
-@lru_cache(maxsize=1)
 def get_groq_client() -> Groq:
+    global GROQ_CLIENT, GROQ_CLIENT_KEY
     groq_api_key = os.getenv("GROQ_API_KEY")
     if not groq_api_key:
         raise HTTPException(status_code=503, detail="GROQ_API_KEY is not configured")
-    return Groq(api_key=groq_api_key)
+    if GROQ_CLIENT is None or GROQ_CLIENT_KEY != groq_api_key:
+        GROQ_CLIENT = Groq(api_key=groq_api_key)
+        GROQ_CLIENT_KEY = groq_api_key
+    return GROQ_CLIENT
 
 router = APIRouter()
 

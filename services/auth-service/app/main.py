@@ -18,8 +18,8 @@ SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "dev-secret")
 PRODUCTION_ENVS = {"production", "prod", "prd"}
 if ENVIRONMENT.lower() in PRODUCTION_ENVS and SECRET_KEY == "dev-secret":
     raise RuntimeError("AUTH_SECRET_KEY must be set in production")
-if ENVIRONMENT.lower() in PRODUCTION_ENVS and len(SECRET_KEY) < 24:
-    raise RuntimeError("AUTH_SECRET_KEY must be at least 24 characters in production")
+if ENVIRONMENT.lower() in PRODUCTION_ENVS and len(SECRET_KEY) < 32:
+    raise RuntimeError("AUTH_SECRET_KEY must be at least 32 characters in production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7"))
