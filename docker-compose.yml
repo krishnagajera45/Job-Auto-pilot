@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: job-autopilot-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+    command: serve
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - job-autopilot-network
+
+  # PostgreSQL Database (optional, for production)
+  # Uncomment for production use
+  # postgres:
+  #   image: postgres:15
+  #   container_name: job-autopilot-postgres
+  #   environment:
+  #     POSTGRES_DB: job_autopilot
+  #     POSTGRES_USER: job_user
+  #     POSTGRES_PASSWORD: changeme
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   networks:
+  #     - job-autopilot-network
+
+  # Redis (optional, for caching and task queues)
+  # Uncomment if using Redis
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: job-autopilot-redis
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+  #   networks:
+  #     - job-autopilot-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: job-autopilot-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - pdf_output:/app/output
+    environment:
+      # LLM
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: gemma2
+      # APIs (use defaults from .env.example)
+      BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-brave_search_test_key_12345}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-AC_test_account_sid_12345}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-twilio_auth_token_12345}
+      TWILIO_WHATSAPP_NUMBER: ${TWILIO_WHATSAPP_NUMBER:-+1234567890}
+      MEM0_API_KEY: ${MEM0_API_KEY:-mem0_test_key_12345}
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+      # Database
+      DATABASE_URL: sqlite:///./job_autopilot.db
+      # Scheduling
+      SCHEDULED_SEARCH_TIME: ${SCHEDULED_SEARCH_TIME:-12:00}
+      SCHEDULED_SEARCH_QUERY: ${SCHEDULED_SEARCH_QUERY:-Senior Software Engineer roles}
+      # Features
+      USE_MOCK_MCP_TOOLS: "true"
+      DEBUG: "false"
+      LOG_LEVEL: "INFO"
+    depends_on:
+      ollama:
+        condition: service_healthy
+    networks:
+      - job-autopilot-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  ollama_data:
+  postgres_data:
+  redis_data:
+  pdf_output:
+
+networks:
+  job-autopilot-network:
+    driver: bridge
