@@ -34,7 +34,7 @@ graph TD
 
 | Component | Purpose | Technology |
 |-----------|---------|-----------|
-| **Job Search Agent** | Fetches 10-15 job postings | Brave Search MCP |
+| **Job Search Agent** | Fetches 10-15 job postings from multiple sources | Brave Search MCP, OpenClaw MCP |
 | **Curation Agent** | Analyzes jobs, pulls skills from Mem0, selects resume template | LangChain + Mem0 |
 | **Resume Generation Agent** | Generates LaTeX resume tailored to job description | LLM (Gemma-4-E2B-it) |
 | **Compilation Agent** | Compiles LaTeX to PDF with error recovery | pdflatex MCP Tool |
@@ -105,7 +105,7 @@ Every day at 12:00 PM:
 | **Orchestration** | Python 3.11+, LangGraph, LangChain |
 | **LLM** | Gemma-4-E2B-it (Ollama) |
 | **Memory** | Mem0 |
-| **Job Search** | Brave Search API |
+| **Job Search** | Brave Search API, OpenClaw API |
 | **PDF Generation** | LaTeX + pdflatex |
 | **Messaging** | WhatsApp Business API / Twilio |
 | **Observability** | LangSmith |
@@ -254,10 +254,21 @@ curl -X POST http://localhost:8000/api/trigger-search
 ## 🔍 Agent Details
 
 ### Job Search Agent
-- Queries Brave Search with user intent
+- **Brave Search**: Queries Brave Search API for job listings
+- **OpenClaw**: Queries OpenClaw job board API for additional job sources
+- **Dual Source**: Can combine results from both providers for broader coverage
 - Parses job title, company, description, location, salary
 - Returns structured job data
 - Handles pagination for multiple results
+- Supports source selection: Brave Search only, OpenClaw only, or both
+
+### OpenClaw Integration
+OpenClaw is an open-source job board API that provides programmatic access to job listings:
+- **API Documentation**: https://openclaw.dev/docs
+- **Features**: Real-time job board data, filtering support, comprehensive job details
+- **Configuration**: Set `OPENCLAW_API_KEY` and `OPENCLAW_BASE_URL` in `.env`
+- **Usage**: Users can specify job source in queries: "Find SDE roles via OpenClaw" or "Find SDE roles from all sources"
+- **Rate Limiting**: Check OpenClaw API docs for rate limits specific to your plan
 
 ### Curation Agent
 - Analyzes job requirements vs user skills
