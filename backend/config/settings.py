@@ -30,6 +30,15 @@ class Settings(BaseSettings):
         description="Brave Search API key"
     )
     
+    OPENCLAW_API_KEY: str = Field(
+        default="openclaw_test_key_12345",
+        description="OpenClaw API key for job board access"
+    )
+    OPENCLAW_BASE_URL: str = Field(
+        default="https://api.openclaw.dev",
+        description="OpenClaw API base URL"
+    )
+    
     TWILIO_ACCOUNT_SID: str = Field(
         default="AC_test_account_sid_12345",
         description="Twilio account SID"
@@ -102,6 +111,7 @@ class Settings(BaseSettings):
     # ==========================
     ENABLE_MEM0: bool = Field(default=True, description="Enable Mem0 integration")
     ENABLE_LANGSMITH: bool = Field(default=True, description="Enable LangSmith tracing")
+    ENABLE_OPENCLAW: bool = Field(default=True, description="Enable OpenClaw job board integration")
     USE_MOCK_MCP_TOOLS: bool = Field(
         default=True,
         description="Use mock MCP tools for testing (no real API calls)"

@@ -14,7 +14,7 @@ Job Autopilot is a **multi-agent agentic AI system** orchestrated using LangGrap
 - **Modular**: Each agent is independent and testable
 - **Error-resilient**: Self-correcting mechanisms for LaTeX compilation
 - **Observable**: Full traceability in LangSmith
-- **Local-first**: Ollama for LLM, Mem0 for memory, no external API dependencies except Brave Search
+- **Local-first**: Ollama for LLM, Mem0 for memory, multiple job board APIs (Brave Search, OpenClaw)
 
 ---
 
@@ -44,7 +44,11 @@ Job Autopilot is a **multi-agent agentic AI system** orchestrated using LangGrap
                     ▼                 ▼
         ┌──────────────────┐   ┌──────────────────┐
         │ JOB SEARCH AGENT │   │  JOB PARSER AGENT│
-        │ (Brave Search)   │   │ (Link Extraction)│
+        │ (Multi-Source)   │   │ (Link Extraction)│
+        │                  │   │                  │
+        │ • Brave Search   │   │                  │
+        │ • OpenClaw       │   │                  │
+        │ • Both sources   │   │                  │
         └──────────────────┘   └──────────────────┘
                     │                 │
                     └────────┬────────┘
@@ -183,17 +187,23 @@ User receives WhatsApp message + PDF
 
 ### 3.1 Job Search Agent
 
-**Input**: `JobSearchRequest`
+**Input**: `JobSearchRequest` (with optional `job_source` parameter: "brave_search", "openclaw", or "both")
 **Output**: `List[JobPosting]`
+
+**Supported Job Sources**:
+1. **Brave Search**: General web search for job postings
+2. **OpenClaw**: Dedicated open-source job board API with comprehensive job data
+3. **Both**: Combines results from both sources (deduplicated by job_id)
 
 ```python
 class JobSearchAgent:
     """
     Responsible for:
-    - Executing Brave Search queries
+    - Routing queries to appropriate job search backend(s)
+    - Executing Brave Search or OpenClaw API calls
     - Parsing job posting results
-    - Structuring job data
-    - Handling pagination (10-15 results)
+    - Structuring job data into standardized JobPosting model
+    - Handling pagination (10-15 results per source)
     """
     
     async def invoke(self, request: JobSearchRequest) -> List[JobPosting]:
@@ -206,8 +216,10 @@ class JobSearchAgent:
 
 **Error Handling**:
 - If Brave Search fails: Retry with exponential backoff (3 attempts)
+- If OpenClaw fails: Retry with exponential backoff (3 attempts, respects rate limits)
 - If parsing fails: Skip result, continue
 - If no results: Return empty list, notify user
+- Multi-source (Both): Continues with available source if one fails
 
 ### 3.2 Job Parser Agent
 

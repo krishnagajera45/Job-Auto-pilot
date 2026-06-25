@@ -1,11 +1,12 @@
 """
 WhatsApp Webhook Handler - Receives and processes WhatsApp messages
+Supports job source selection keywords in messages
 """
 
 from fastapi import APIRouter, Request, BackgroundTasks
 from pydantic import BaseModel
 from typing import Optional
-from models.core import InputSource
+from models.core import InputSource, JobSource
 from agents.orchestrator import run_workflow
 from core.logger import get_logger
 
@@ -48,10 +49,13 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
     # Determine input source based on message content
     input_source = InputSource.WHATSAPP
     
-    # Parse message to extract intent
+    # Parse message to extract intent and job source
     # Simple parsing: if it's a URL, treat as job link
     if message_body.startswith("http"):
         input_source = InputSource.JOB_LINK
+    
+    # Detect job source preference from message keywords
+    job_source = detect_job_source_from_message(message_body)
     
     # Add workflow execution to background tasks
     background_tasks.add_task(
@@ -59,6 +63,7 @@ async def whatsapp_webhook(request: Request, background_tasks: BackgroundTasks):
         message_body=message_body,
         user_id=user_id,
         input_source=input_source,
+        job_source=job_source,
         phone=from_phone
     )
     
@@ -70,6 +75,7 @@ async def process_whatsapp_message(
     message_body: str,
     user_id: str,
     input_source: InputSource,
+    job_source: JobSource,
     phone: str
 ):
     """
@@ -80,16 +86,18 @@ async def process_whatsapp_message(
         extra={
             "user_id": user_id,
             "phone": phone,
-            "input_source": input_source.value
+            "input_source": input_source.value,
+            "job_source": job_source.value
         }
     )
     
     try:
-        # Run workflow
+        # Run workflow with job source preference
         result = await run_workflow(
             query=message_body,
             user_id=user_id,
-            input_source=input_source
+            input_source=input_source,
+            job_source=job_source
         )
         
         if result.errors:
@@ -129,6 +137,35 @@ def extract_user_id_from_phone(phone: str) -> str:
     phone = phone.replace("whatsapp:", "")
     # Use phone as user_id for mock implementation
     return f"user_{phone}"
+
+
+def detect_job_source_from_message(message: str) -> JobSource:
+    """
+    Detect job source preference from message content
+    
+    Keywords:
+    - "openclaw": Use OpenClaw API only
+    - "brave": Use Brave Search only
+    - "all" / "all sources": Use both sources
+    
+    Default: Brave Search (most reliable for general searches)
+    """
+    message_lower = message.lower()
+    
+    if "openclaw" in message_lower:
+        logger.debug("Job source detected: OpenClaw")
+        return JobSource.OPENCLAW
+    
+    if "all sources" in message_lower or "all boards" in message_lower:
+        logger.debug("Job source detected: Both")
+        return JobSource.BOTH
+    
+    if "brave" in message_lower:
+        logger.debug("Job source detected: Brave Search")
+        return JobSource.BRAVE_SEARCH
+    
+    # Default to Brave Search
+    return JobSource.BRAVE_SEARCH
 
 
 @router.get("/webhook")

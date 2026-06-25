@@ -5,7 +5,7 @@ Orchestrates the entire job application pipeline
 
 from typing import Optional
 from langgraph.graph import StateGraph, END
-from models.core import AgentState, JobSearchRequest, InputSource
+from models.core import AgentState, JobSearchRequest, InputSource, JobSource
 from agents.search_agent import create_job_search_agent
 from agents.curation_agent import create_curation_agent
 from agents.generation_agent import create_resume_generation_agent
@@ -91,7 +91,8 @@ class JobApplicationOrchestrator:
         self,
         query: str,
         user_id: str,
-        input_source: InputSource = InputSource.WHATSAPP
+        input_source: InputSource = InputSource.WHATSAPP,
+        job_source: Optional['JobSource'] = None
     ) -> AgentState:
         """
         Execute the entire workflow
@@ -100,6 +101,7 @@ class JobApplicationOrchestrator:
             query: Search query or job link
             user_id: User ID
             input_source: Source of input (whatsapp, job_link, scheduled)
+            job_source: Preferred job search source (brave_search, openclaw, both)
         
         Returns:
             Final agent state with all results
@@ -113,16 +115,31 @@ class JobApplicationOrchestrator:
             }
         )
         
+        # Import JobSource here to avoid circular imports
+        if job_source is None:
+            job_source = JobSource.BRAVE_SEARCH
+        
         # Initialize state
         request = JobSearchRequest(
             query=query,
             user_id=user_id,
             input_source=input_source,
+            job_source=job_source,
             original_message=query
         )
         
         initial_state = AgentState(
             job_search_request=request
+        )
+        
+        logger.info(
+            "Starting Job Application Workflow",
+            extra={
+                "query": query[:50],
+                "user_id": user_id,
+                "input_source": input_source.value,
+                "job_source": request.job_source.value
+            }
         )
         
         # Execute workflow
@@ -187,10 +204,22 @@ def get_orchestrator() -> JobApplicationOrchestrator:
 async def run_workflow(
     query: str,
     user_id: str,
-    input_source: InputSource = InputSource.WHATSAPP
+    input_source: InputSource = InputSource.WHATSAPP,
+    job_source: Optional['JobSource'] = None
 ) -> AgentState:
     """
     Convenience function to run the entire workflow
+    
+    Args:
+        query: Search query or job link
+        user_id: User identifier
+        input_source: Source of the input (WhatsApp, job link, scheduled)
+        job_source: Preferred job search source (Brave Search, OpenClaw, or both)
     """
+    from models.core import JobSource
+    
+    if job_source is None:
+        job_source = JobSource.BRAVE_SEARCH
+    
     orchestrator = get_orchestrator()
-    return await orchestrator.invoke(query, user_id, input_source)
+    return await orchestrator.invoke(query, user_id, input_source, job_source)

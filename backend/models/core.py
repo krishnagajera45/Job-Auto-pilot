@@ -15,6 +15,13 @@ class InputSource(str, Enum):
     SCHEDULED = "scheduled"
 
 
+class JobSource(str, Enum):
+    """Job search source/provider"""
+    BRAVE_SEARCH = "brave_search"
+    OPENCLAW = "openclaw"
+    BOTH = "both"  # Use both sources and combine results
+
+
 class JobPosting(BaseModel):
     """Represents a job posting"""
     id: str
@@ -98,6 +105,10 @@ class JobSearchRequest(BaseModel):
     query: str = Field(description="Search query, e.g., 'SDE roles in NYC'")
     user_id: str
     input_source: InputSource
+    job_source: JobSource = Field(
+        default=JobSource.BRAVE_SEARCH,
+        description="Job search provider: 'brave_search', 'openclaw', or 'both'"
+    )
     original_message: Optional[str] = None  # For WhatsApp context
 
 
